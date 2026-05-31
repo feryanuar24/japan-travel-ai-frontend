@@ -38,6 +38,14 @@ export type AuthFeedback = {
   validationErrors: ValidationIssue[];
 };
 
+export function isAdminRole(role: string | null | undefined) {
+  return role === "admin";
+}
+
+export function getHomeRouteForRole(role: string | null | undefined) {
+  return isAdminRole(role) ? "/admin/dashboard" : "/user/dashboard";
+}
+
 const AUTH_SESSION_KEY = "japan-travel-ai-auth-session";
 const AUTH_SESSION_EVENT = "japan-travel-ai-auth-session-change";
 

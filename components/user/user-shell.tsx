@@ -1,24 +1,24 @@
 import Link from "next/link";
-import { Button } from "../ui/Button";
+import { Button } from '@/components/ui/Button'
 
-type AdminNavItem = {
+type UserNavItem = {
   label: string;
   href: string;
   description?: string;
   active?: boolean;
 };
 
-type AdminShellProps = {
+type UserShellProps = {
   userName: string;
   userEmail: string;
   title: string;
   description: string;
-  navItems: AdminNavItem[];
+  navItems: UserNavItem[];
   onLogout: () => void;
   children: React.ReactNode;
 };
 
-export function AdminShell({
+export function UserShell({
   userName,
   userEmail,
   title,
@@ -26,16 +26,16 @@ export function AdminShell({
   navItems,
   onLogout,
   children,
-}: AdminShellProps) {
+}: UserShellProps) {
   return (
-    <main className="min-h-screen bg-bg px-4 py-4 text-text sm:px-6 lg:px-8">
+    <main className="min-h-screen px-4 py-4 text-text sm:px-6 lg:px-8 bg-bg">
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-7xl overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
         <div className="flex w-full flex-col">
-          <header className="border-b border-border bg-surface px-5 py-4 sm:px-6 lg:px-8">
+          <header className="border-b border-border px-5 py-4 sm:px-6 lg:px-8 bg-surface">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-1">
                 <p className="text-xs font-semibold uppercase tracking-[0.26em] text-amber-700">
-                  Japan Travel AI Admin
+                  Japan Travel AI
                 </p>
                 <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
                   {title}
@@ -52,13 +52,13 @@ export function AdminShell({
                   <p className="text-sm text-text-secondary">{userEmail}</p>
                 </div>
 
-                <Button type="button" onClick={onLogout} className="shrink-0">
+                <Button type="button" onClick={onLogout} variant="danger" className="shrink-0">
                   Logout
                 </Button>
               </div>
             </div>
 
-            <nav aria-label="Admin modules" className="mt-5 flex gap-3 overflow-x-auto pb-1">
+            <nav aria-label="User portal modules" className="mt-5 flex gap-3 overflow-x-auto pb-1">
               {navItems.map((item) => (
                 <Link
                   key={item.label}

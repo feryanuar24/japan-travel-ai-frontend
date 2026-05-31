@@ -25,10 +25,10 @@ describe("Home page", () => {
       }),
     ).toBeInTheDocument();
 
-    expect(screen.getByRole("link", { name: /open login/i })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("link", { name: /open login/i })).toHaveAttribute("href", "/auth/login");
     expect(screen.getByRole("link", { name: /create account/i })).toHaveAttribute(
       "href",
-      "/register",
+      "/auth/register",
     );
   });
 });

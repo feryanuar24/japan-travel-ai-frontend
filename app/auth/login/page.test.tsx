@@ -1,8 +1,7 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockReplace = vi.fn();
-const mockShowFeedback = vi.fn();
 const mockSetAuthSession = vi.fn();
 const mockUseAuth = vi.fn();
 const mockLogin = vi.fn();
@@ -19,18 +18,15 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-vi.mock("../../components/auth/auth-provider", () => ({
+vi.mock("../../../components/auth/auth-provider", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-vi.mock("../../components/feedback/feedback", () => ({
-  useFeedback: () => ({ showFeedback: mockShowFeedback }),
-}));
-
-vi.mock("../../lib/auth", () => ({
+vi.mock("../../../lib/auth", () => ({
   authApi: {
     login: (...args: unknown[]) => mockLogin(...args),
   },
+  getHomeRouteForRole: (role: string | null | undefined) => (role === "admin" ? "/admin" : "/workspace"),
   getAuthFeedbackToast: (error: unknown) => ({
     message: error instanceof Error ? error.message : "Something went wrong. Please try again.",
     details: [],
@@ -58,7 +54,7 @@ describe("Login page", () => {
     expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
   });
 
-  it("submits credentials, saves the session, and redirects to the dashboard", async () => {
+  it("submits credentials, saves the session, and redirects to the workspace", async () => {
     mockLogin.mockResolvedValue({
       message: "Login successful",
       data: {
@@ -68,7 +64,7 @@ describe("Login page", () => {
           name: "Fery Anuar",
           email: "fery@example.com",
           emailVerified: null,
-          role: "admin",
+          role: "user",
         },
       },
     });
@@ -93,10 +89,36 @@ describe("Login page", () => {
         name: "Fery Anuar",
         email: "fery@example.com",
         emailVerified: null,
-        role: "admin",
+        role: "user",
       },
     });
-    expect(mockShowFeedback).toHaveBeenCalledWith({ message: "Login successful" }, { tone: "success" });
-    expect(mockReplace).toHaveBeenCalledWith("/dashboard");
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByRole("heading", { name: "Login successful" })).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByLabelText("Close"));
+    expect(mockReplace).toHaveBeenCalledWith("/workspace");
+  });
+
+  it("redirects admin sessions to the admin console", async () => {
+    mockUseAuth.mockReturnValue({
+      session: {
+        token: "token-admin",
+        user: {
+          _id: "admin-1",
+          name: "Admin User",
+          email: "admin@example.com",
+          emailVerified: null,
+          role: "admin",
+        },
+      },
+      isReady: true,
+    });
+
+    render(<LoginPage />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith("/admin");
+    });
   });
 });

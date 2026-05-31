@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Japan Travel AI",
-  description: "Authentication module for Japan Travel AI frontend",
+  title: "Japan Travel AI | Smart Trip Planning",
+  description:
+    "Plan Japan trips with AI itinerary generation, budget estimates, smart place recommendations, transport planning, and an AI chat assistant.",
 };
 
 export default function RootLayout({

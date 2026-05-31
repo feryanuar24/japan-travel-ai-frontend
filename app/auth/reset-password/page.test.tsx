@@ -1,10 +1,9 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockReplace = vi.fn();
-const mockShowFeedback = vi.fn();
 const mockResetPassword = vi.fn();
-const mockGetSearchParam = vi.fn();
+const mockUseSearchParams = vi.fn();
 
 vi.mock("next/link", () => ({
   default: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
@@ -16,14 +15,10 @@ vi.mock("next/link", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mockReplace }),
-  useSearchParams: () => ({ get: mockGetSearchParam }),
+  useSearchParams: () => mockUseSearchParams(),
 }));
 
-vi.mock("../../components/feedback/feedback", () => ({
-  useFeedback: () => ({ showFeedback: mockShowFeedback }),
-}));
-
-vi.mock("../../lib/auth", () => ({
+vi.mock("../../../lib/auth", () => ({
   authApi: {
     resetPassword: (...args: unknown[]) => mockResetPassword(...args),
   },
@@ -38,19 +33,23 @@ import ResetPasswordPage from "./page";
 describe("Reset password page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetSearchParam.mockImplementation((key: string) => (key === "email" ? "fery@example.com" : null));
+    mockUseSearchParams.mockReturnValue({
+      get: (key: string) => (key === "email" ? "fery@example.com" : null),
+    });
   });
 
-  it("renders the reset form and shows the email hint", () => {
+  it("renders the reset password form", () => {
     render(<ResetPasswordPage />);
 
     expect(screen.getByRole("heading", { name: /set a new password/i })).toBeInTheDocument();
     expect(screen.getByText(/reset link requested for fery@example.com/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/reset token/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/new password/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /reset password/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /login/i })).toHaveAttribute("href", "/auth/login");
   });
 
-  it("submits the token and password, then redirects to login", async () => {
+  it("resets the password and returns to login", async () => {
     mockResetPassword.mockResolvedValue({ message: "Password updated" });
 
     render(<ResetPasswordPage />);
@@ -66,7 +65,10 @@ describe("Reset password page", () => {
       });
     });
 
-    expect(mockShowFeedback).toHaveBeenCalledWith({ message: "Password updated" }, { tone: "success" });
-    expect(mockReplace).toHaveBeenCalledWith("/login");
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByRole("heading", { name: "Password updated" })).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByLabelText("Close"));
+    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
   });
 });

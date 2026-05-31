@@ -1,8 +1,7 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockReplace = vi.fn();
-const mockShowFeedback = vi.fn();
 const mockForgotPassword = vi.fn();
 
 vi.mock("next/link", () => ({
@@ -17,11 +16,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-vi.mock("../../components/feedback/feedback", () => ({
-  useFeedback: () => ({ showFeedback: mockShowFeedback }),
-}));
-
-vi.mock("../../lib/auth", () => ({
+vi.mock("../../../lib/auth", () => ({
   authApi: {
     forgotPassword: (...args: unknown[]) => mockForgotPassword(...args),
   },
@@ -38,15 +33,16 @@ describe("Forgot password page", () => {
     vi.clearAllMocks();
   });
 
-  it("renders the reset request form", () => {
+  it("renders the forgot password form", () => {
     render(<ForgotPasswordPage />);
 
     expect(screen.getByRole("heading", { name: /reset your password/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /send reset link/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /login/i })).toHaveAttribute("href", "/auth/login");
   });
 
-  it("submits the email and redirects to reset password", async () => {
+  it("requests a reset link and redirects to the reset page", async () => {
     mockForgotPassword.mockResolvedValue({ message: "Reset link sent" });
 
     render(<ForgotPasswordPage />);
@@ -58,7 +54,10 @@ describe("Forgot password page", () => {
       expect(mockForgotPassword).toHaveBeenCalledWith({ email: "fery@example.com" });
     });
 
-    expect(mockShowFeedback).toHaveBeenCalledWith({ message: "Reset link sent" }, { tone: "success" });
-    expect(mockReplace).toHaveBeenCalledWith("/reset-password?email=fery%40example.com");
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByRole("heading", { name: "Reset link sent" })).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByLabelText("Close"));
+    expect(mockReplace).toHaveBeenCalledWith("/auth/reset-password?email=fery%40example.com");
   });
 });

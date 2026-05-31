@@ -17,13 +17,13 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-vi.mock("../../components/auth/auth-provider", () => ({
+vi.mock("../../../components/auth/auth-provider", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-import DashboardPage from "./page";
+import WorkspacePage from "./page";
 
-describe("Dashboard page", () => {
+describe("Travel workspace page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
@@ -34,7 +34,7 @@ describe("Dashboard page", () => {
           name: "Fery Anuar",
           email: "fery@example.com",
           emailVerified: null,
-          role: "admin",
+          role: "user",
         },
       },
       isReady: true,
@@ -42,24 +42,26 @@ describe("Dashboard page", () => {
     });
   });
 
-  it("renders the admin navigation and user summary", () => {
-    render(<DashboardPage />);
+  it("renders the user portal navigation and summary", () => {
+    render(<WorkspacePage />);
 
-    expect(screen.getByRole("heading", { name: /dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /travel workspace/i })).toBeInTheDocument();
     expect(screen.getByText(/signed in as/i)).toBeInTheDocument();
     expect(screen.getByText("fery@example.com")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /overview/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /trip planner/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /content & modules/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /settings/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /itinerary builder/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /budget estimator/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /smart place recommend/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /transport plan/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /chat ai assistant/i })).toBeInTheDocument();
   });
 
   it("logs out and redirects to login", () => {
-    render(<DashboardPage />);
+    render(<WorkspacePage />);
 
-    fireEvent.click(screen.getByRole("button", { name: /logout/i }));
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
 
     expect(mockClearSession).toHaveBeenCalledTimes(1);
-    expect(mockReplace).toHaveBeenCalledWith("/login");
+    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
   });
 });
